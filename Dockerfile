@@ -1,32 +1,17 @@
-# Use an official Golang image as a parent image
-FROM golang:1.19-alpine as builder
+# Use the PocketBase image as the base
+FROM ghcr.io/muchobien/pocketbase:latest
 
-# Set the working directory inside the container
+# Set the working directory
 WORKDIR /app
 
-# Download PocketBase source code and build it
-RUN apk add --no-cache git \
-    && git clone --depth 1 https://github.com/pocketbase/pocketbase \
-    && cd pocketbase \
-    && go build -o pocketbase
+# Copy the data, hooks, public, and migrations directories
+COPY ./pb_data /pb_data
+COPY ./pb_hooks /pb_hooks
+COPY ./pb_public /pb_public
+COPY ./pb_migrations /pb_migrations
 
-# Final stage: minimal runtime image
-FROM alpine:latest
-
-# Set the working directory inside the container
-WORKDIR /app
-
-# Copy the built PocketBase binary from the builder stage
-COPY --from=builder /app/pocketbase/pocketbase /app/pocketbase
-
-# Copy any additional static files or configurations (if necessary)
-COPY pb_data /app/pb_data
-COPY pb_hooks /app/pb_hooks
-COPY pb_public /app/pb_public
-COPY pb_migrations /app/pb_migrations
-
-# Expose the port that PocketBase will run on
+# Expose the port PocketBase will run on
 EXPOSE 8090
 
-# Set the command to run PocketBase
-CMD ["/app/pocketbase", "serve", "--dir", "/app"]
+# Start the PocketBase server
+CMD ["serve", "--dir", "/app", "--data", "/pb_data", "--hooks", "/pb_hooks", "--public", "/pb_public", "--migrations", "/pb_migrations"]
