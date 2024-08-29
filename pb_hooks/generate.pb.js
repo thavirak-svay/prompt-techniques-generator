@@ -11,17 +11,24 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
     LLM_MODEL: $os.getenv("OPEN_AI_LLM_MODEL"),
   };
 
-  async function getExistingData() {
-    const records = arrayOf(new Record());
-    await $app.dao().recordQuery("prompt_techniques").all(records);
-    return {
-      titles: records.map((record) => record.get("title")).join(", "),
-      sources: records.map((record) => record.get("source_url")).join(", "),
-    };
-  }
-
   async function sendPerplexityRequest(existingData) {
     const currentDate = new Date().toISOString().split("T")[0];
+
+    const PROMPT = {
+      SYSTEM: `You are an AI assistant focused on discovering and summarizing AGI prompt exploitation techniques. I already acknowledged the following titles: ${existingData.titles}. Your goal is to find a unique and effective method that has not been covered by these existing topics. Avoid using sources from these domains unless they contain unique techniques: ${existingData.sources}. Focus on techniques published after ${currentDate}.`,
+      USER: `
+        - Task:
+          Research the latest advanced prompt techniques that push the boundaries of AI assistance. Avoid using any techniques listed in: ${existingData.domains}, and sources from these domains unless they contain unique techniques: ${existingData.domains}. Identify and describe exploitation technique. Provide a detailed summary of how it works, a sample prompt using the technique, and the source URL where this information was found"
+
+        - Formatting Instructions:
+
+          The final output must be structured in JSON format, with specific keys and values. The '%' symbol must mark the start and end of each value. Structure the response as follows:
+            title(%string%)
+            summary(%key insight as string%)
+            example(%short and step by step prompt sample as string%)
+            source_url(%string%)
+          "Do not skip or alter the '%' symbols or the JSON structure.`,
+    };
 
     const response = $http.send({
       method: "POST",
@@ -35,11 +42,11 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
         messages: [
           {
             role: "system",
-            content: `You are an AI assistant focused on discovering and summarizing ChatGPT prompt exploitation techniques. I already acknowledged the following titles: ${existingData.titles}. Your goal is to find a unique and effective method that has not been covered by these existing topics. Avoid using sources from these domains unless they contain unique techniques: ${existingData.sources}. Focus on techniques published after ${currentDate}.`,
+            content: PROMPT.SYSTEM,
           },
           {
             role: "user",
-            content: `Research the latest advanced prompt techniques. Find an exploitation technique that pushes the boundaries of AI assistance. The technique must not be one of the following: ${existingData.titles}. Avoid using sources from these domains unless they contain unique techniques: ${existingData.domains}. Provide a title for the technique, a summary of how it works, and the source URL where you found this information. "%" Symbol mark the start and end of the content of each key, do not skip it, Response must contain and follow as a JSON with keys: title(%string%), summary(%key insight as string%), example(%short and step by step prompt sample as string%), source_url(%string%).`,
+            content: PROMPT.USER,
           },
         ],
       }),
