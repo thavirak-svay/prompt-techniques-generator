@@ -5,12 +5,6 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
     LLM_MODEL: $os.getenv("PERPLEXITY_LLM_MODEL"),
   };
 
-  const OPEN_AI = {
-    API_KEY: $os.getenv("OPEN_AI_API_KEY"),
-    API_URL: $os.getenv("OPEN_AI_API_URL"),
-    LLM_MODEL: $os.getenv("OPEN_AI_LLM_MODEL"),
-  };
-
   async function getExistingData() {
     const records = arrayOf(new Record());
     await $app.dao().recordQuery("prompt_techniques").all(records);
@@ -22,24 +16,6 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
 
   async function sendPerplexityRequest(existingData) {
     const currentDate = new Date().toISOString().split("T")[0];
-
-    const PROMPT = {
-      SYSTEM: `You are an AI assistant focused on discovering and summarizing AGI prompt exploitation techniques. I already acknowledged the following titles: ${existingData.titles}. Your goal is to find a unique and effective method that has not been covered by these existing topics. Avoid using sources from these domains unless they contain unique techniques: ${existingData.sources}. Focus on techniques published after ${currentDate}.`,
-      USER: `
-        Research the latest advanced prompt techniques that push the boundaries of AI assistance. Avoid using any techniques listed in: ${existingData.titles}, and sources from these domains unless they contain unique techniques: ${existingData.sources}. Identify and describe an exploitation technique. Provide a detailed summary of how it works, a sample prompt using the technique, and the source URL where this information was found.
-
-        Formatting Instructions:
-        The final output must be structured in JSON format, with specific keys and values.
-
-        {
-          "title": "as string",
-          "summary": "key insight as string",
-          "example": "short and step-by-step prompt sample as string",
-          "source_url": "as string"
-        }
-
-      `,
-    };
 
     const response = $http.send({
       method: "POST",
@@ -53,67 +29,35 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
         messages: [
           {
             role: "system",
-            content: PROMPT.SYSTEM,
+            content: `You are an AI assistant focused on discovering and summarizing ChatGPT prompt exploitation techniques. I already acknowledged the following titles: ${existingData.titles}. Your goal is to find a unique and effective method that has not been covered by these existing topics. Avoid using sources from these domains unless they contain unique techniques: ${existingData.sources}. Focus on techniques published after ${currentDate}.`,
           },
           {
             role: "user",
-            content: PROMPT.USER,
+            content: `Research the latest advanced prompt techniques. Find an exploitation technique that pushes the boundaries of AI assistance. The technique must not be one of the following: ${existingData.titles}. Avoid using sources from these domains unless they contain unique techniques: ${existingData.domains}. Provide a title for the technique, a summary of how it works, and the source URL where you found this information. Response must contain and follow as a JSON with keys: title, summary(key insight), example(short and step by step prompt sample), source_url without missing a single field.`,
           },
         ],
       }),
     });
 
-    return response;
+    return response.json.choices?.[0]?.message?.content;
   }
 
-  // async function sendChatGPTRequest(existingData) {
-  //   const currentDate = new Date().toISOString().split("T")[0];
-
-  //   const response = await fetch(OPEN_AI.API_URL, {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       Authorization: `Bearer ${OPEN_AI.API_KEY}`,
-  //     },
-  //     body: JSON.stringify({
-  //       model: OPEN_AI.LLM_MODEL,
-  //       messages: [
-  //         {
-  //           role: "system",
-  //           content: `You are an AI assistant focused on discovering and summarizing ChatGPT prompt exploitation techniques. I already acknowledged the following titles: ${existingData.titles}. Your goal is to find a unique and effective method that has not been covered by these existing topics. Avoid using sources from these domains unless they contain unique techniques: ${existingData.sources}. Focus on techniques published after ${currentDate}.`,
-  //         },
-  //         {
-  //           role: "user",
-  //           content: `Research the latest advanced prompt techniques. Find an exploitation technique that pushes the boundaries of AI assistance. The technique must not be one of the following: ${existingData.titles}. Avoid using sources from these domains unless they contain unique techniques: ${existingData.domains}. Provide a title for the technique, a summary of how it works, and the source URL where you found this information. "%" Symbol mark the start and end of the content of each key, do not skip it, Response must contain and follow as a JSON with keys: title(%string%), summary(%key insight as string%), example(%short and step by step prompt sample as string%), source_url(%string%).`,
-  //         },
-  //       ],
-  //     }),
-  //   });
-
-  //   const data = await response.json();
-  //   return data.choices[0].message.content;
-  // }
-
-  function extractPromptTechnique(response) {
-    const content = response.json.choices?.[0]?.message?.content;
-
+  function extractPromptTechnique(content) {
     const extractData = (key) => {
-      const regex = new RegExp(`${key}:\\s*\\*\\*([^\\*]*)\\*\\*`, "i");
-      const match = content.match(regex);
-      return match ? match[1].trim() : null;
+      const match = content.match(new RegExp(`"${key}":\\s*"([^"]*)"`));
+      return match ? match[1] : null;
     };
 
-    // Extracting data with improved patterns
-    const title = extractData("title");
-    const summary = extractData("summary");
-    const example = extractData("example");
-    const source_url = extractData("source_url");
+    const extractEverythingFromKey = (key) => {
+      const match = content.match(new RegExp(`"${key}":\\s*(\\{[\\s\\S]*?\\})`));
+      return match ? match[1] : null;
+    };
 
     return {
-      title,
-      summary,
-      example,
-      source_url,
+      title: extractData("title"),
+      summary: extractData("summary"),
+      example: extractEverythingFromKey("example"),
+      source_url: extractData("source_url"),
     };
   }
 
@@ -127,7 +71,7 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
   try {
     const existingData = await getExistingData();
     const perplexityResponse = await sendPerplexityRequest(existingData);
-    console.log("perplexityResponse", JSON.stringify(perplexityResponse));
+    console.log("perplexityResponse", perplexityResponse);
     const promptTechnique = extractPromptTechnique(perplexityResponse);
     if (promptTechnique) {
       const record = await savePromptTechnique(promptTechnique);
