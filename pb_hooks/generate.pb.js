@@ -98,9 +98,6 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
     const jsonRegex = /```json\\n({[\s\S]*?})\\n```/;
     const jsonMatch = response.match(jsonRegex);
 
-    const jsonRegex = /```json\\n({[\s\S]*?})\\n```/;
-    const jsonMatch = responseString.match(jsonRegex);
-
     if (jsonMatch && jsonMatch[1]) {
       const jsonString = jsonMatch[1];
 
