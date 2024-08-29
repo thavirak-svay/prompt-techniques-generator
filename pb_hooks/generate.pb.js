@@ -98,6 +98,9 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
     const jsonRegex = /```json\\n({[\s\S]*?})\\n```/;
     const jsonMatch = response.match(jsonRegex);
 
+    const jsonRegex = /```json\\n({[\s\S]*?})\\n```/;
+    const jsonMatch = responseString.match(jsonRegex);
+
     if (jsonMatch && jsonMatch[1]) {
       const jsonString = jsonMatch[1];
 
@@ -105,29 +108,32 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
         // Replace escaped quotes with normal quotes to ensure valid JSON
         const cleanedJsonString = jsonString.replace(/\\"/g, '"');
 
-        // Parse the cleaned JSON string
-        const extractedObject = JSON.parse(cleanedJsonString);
+        // Additional safety check before parsing
+        if (cleanedJsonString.trim().startsWith("{") && cleanedJsonString.trim().endsWith("}")) {
+          const extractedObject = JSON.parse(cleanedJsonString);
 
-        // Ensure all desired fields are extracted
-        const title = extractedObject.title || "Title not found";
-        const summary = extractedObject.summary || "Summary not found";
-        const example = extractedObject.example || "Example not found";
-        const sourceUrl = extractedObject.source_url || "Source URL not found";
+          // Ensure all desired fields are extracted and validate them
+          const title = extractedObject.title ? extractedObject.title : "Title not found";
+          const summary = extractedObject.summary ? extractedObject.summary : "Summary not found";
+          const example = extractedObject.example ? extractedObject.example : "Example not found";
+          const sourceUrl = extractedObject.source_url ? extractedObject.source_url : "Source URL not found";
 
-        // Log the extracted fields
-        console.log({
-          title: title,
-          summary: summary,
-          example: example,
-          source_url: sourceUrl,
-        });
-
-        return {
-          title,
-          summary,
-          example,
-          source_url: sourceUrl,
-        };
+          // Log the extracted fields
+          console.log({
+            title: title,
+            summary: summary,
+            example: example,
+            source_url: sourceUrl,
+          });
+          return {
+            title,
+            summary,
+            example,
+            source_url: sourceUrl,
+          };
+        } else {
+          console.error("Extracted string does not seem to be valid JSON format.");
+        }
       } catch (e) {
         console.error("Error parsing JSON:", e);
       }
