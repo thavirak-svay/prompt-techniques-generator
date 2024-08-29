@@ -33,7 +33,7 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
           },
           {
             role: "user",
-            content: `Research the latest advanced prompt techniques. Find an exploitation technique that pushes the boundaries of AI assistance. The technique must not be one of the following: ${existingData.titles}. Avoid using sources from these domains unless they contain unique techniques: ${existingData.sources}. Provide a title for the technique, a summary of how it works, and the source URL where you found this information. Response must contain and follow as a JSON with keys: title as string, summary(key insight) as string, example(short and step by step prompt sample) as string, source_url as string without missing a single field.`,
+            content: `Research the latest advanced prompt techniques. Find an exploitation technique that pushes the boundaries of AI assistance. The technique must not be one of the following: ${existingData.titles}. Avoid using sources from these domains unless they contain unique techniques: ${existingData.sources}. Provide a title for the technique, a summary of how it works, and the source URL where you found this information. Response must contain and follow as a JSON with keys: title as string, summary(key insight) as string, example(short and step by step prompt sample) as rich text format, source_url as string without missing a single field.`,
           },
         ],
       }),
@@ -43,17 +43,23 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
   }
 
   function extractPromptTechnique(content) {
-    const extractData = (startKey, endKey) => {
+    const extractDataByStartEnd = (startKey, endKey) => {
       const regex = new RegExp(`"${startKey}":\\s*"([^]*)"\\s*,?\\s*"${endKey}"`, "s");
       const match = content.match(regex);
       return match ? match[1].trim() : null;
     };
 
+    const extractDataByKey = (key) => {
+      const regex = new RegExp(`"${key}":\\s*"([^"]*)"`, "s");
+      const match = content.match(regex);
+      return match ? match[1].trim() : null;
+    };
+
     return {
-      title: extractData("title", "summary"),
-      summary: extractData("summary", "example"),
-      example: extractData("example", "source_url"),
-      source_url: extractData("source_url", "}"), // this assumes source_url is the last key
+      title: extractDataByStartEnd("title", "summary"),
+      summary: extractDataByStartEnd("summary", "example"),
+      example: extractDataByStartEnd("example", "source_url"),
+      source_url: extractDataByKey("source_url"),
     };
   }
 
