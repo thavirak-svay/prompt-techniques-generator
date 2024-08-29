@@ -33,7 +33,7 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
           },
           {
             role: "user",
-            content: `Research the latest advanced prompt techniques. Find an exploitation technique that pushes the boundaries of AI assistance. The technique must not be one of the following: ${existingData.titles}. Avoid using sources from these domains unless they contain unique techniques: ${existingData.domains}. Provide a title for the technique, a summary of how it works, and the source URL where you found this information. Response must contain and follow as a JSON with keys: title(return_type: string), summary(return_type: string, definition: key insight), example(return_type: string, definition: short and step by step prompt sample in rich text format), source_url(type: string) without missing a single field.`,
+            content: `Research the latest advanced prompt techniques. Find an exploitation technique that pushes the boundaries of AI assistance. The technique must not be one of the following: ${existingData.titles}. Avoid using sources from these domains unless they contain unique techniques: ${existingData.domains}. Provide a title for the technique, a summary of how it works, and the source URL where you found this information. Response must contain and follow as a JSON with keys: title(string), summary(key insight as string), example(short and step by step prompt sample in rich text format as string), source_url(string).`,
           },
         ],
       }),
