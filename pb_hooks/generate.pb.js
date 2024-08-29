@@ -95,35 +95,45 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
   // }
 
   function extractPromptTechnique(response) {
-    const contentString = response.choices?.[0]?.message?.content;
-    if (!contentString) return;
+    const jsonRegex = /```json\\n({[\s\S]*?})\\n```/;
+    const jsonMatch = response.match(jsonRegex);
 
-    // Define regular expressions for each field
-    const titleRegex = /"title":\s*"([^"]*)"/;
-    const summaryRegex = /"summary":\s*"([^"]*)"/;
-    const exampleRegex = /"example":\s*"([^"]*)"/;
-    const sourceUrlRegex = /"source_url":\s*"([^"]*)"/;
+    if (jsonMatch && jsonMatch[1]) {
+      const jsonString = jsonMatch[1];
 
-    // Extract values using Regex
-    const titleMatch = contentString.match(titleRegex);
-    const summaryMatch = contentString.match(summaryRegex);
-    const exampleMatch = contentString.match(exampleRegex);
-    const sourceUrlMatch = contentString.match(sourceUrlRegex);
+      try {
+        // Replace escaped quotes with normal quotes to ensure valid JSON
+        const cleanedJsonString = jsonString.replace(/\\"/g, '"');
 
-    // Create an object with the extracted values
-    const extractedObject = {
-      title: titleMatch ? titleMatch[1] : null,
-      summary: summaryMatch ? summaryMatch[1] : null,
-      example: exampleMatch ? exampleMatch[1] : null,
-      source_url: sourceUrlMatch ? sourceUrlMatch[1] : null,
-    };
+        // Parse the cleaned JSON string
+        const extractedObject = JSON.parse(cleanedJsonString);
 
-    return {
-      title: extractedObject.title,
-      summary: extractedObject.summary,
-      example: extractedObject.example,
-      source_url: extractedObject.source_url,
-    };
+        // Ensure all desired fields are extracted
+        const title = extractedObject.title || "Title not found";
+        const summary = extractedObject.summary || "Summary not found";
+        const example = extractedObject.example || "Example not found";
+        const sourceUrl = extractedObject.source_url || "Source URL not found";
+
+        // Log the extracted fields
+        console.log({
+          title: title,
+          summary: summary,
+          example: example,
+          source_url: sourceUrl,
+        });
+
+        return {
+          title,
+          summary,
+          example,
+          source_url: sourceUrl,
+        };
+      } catch (e) {
+        console.error("Error parsing JSON:", e);
+      }
+    } else {
+      console.error("No valid JSON block found in the response.");
+    }
   }
 
   async function savePromptTechnique(promptTechnique) {
