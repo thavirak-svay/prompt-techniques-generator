@@ -50,7 +50,7 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
 
     const extractEverythingFromKey = (key) => {
       const match = content.match(new RegExp(`"${key}":\\s*(\\{[\\s\\S]*?\\})`));
-      return match ? JSON.parse(match[1]) : null;
+      return match ? match[1] : null;
     };
 
     return {
