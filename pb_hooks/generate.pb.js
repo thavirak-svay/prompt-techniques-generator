@@ -3,19 +3,19 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
     API_KEY: "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",
     URL: "https://api.perplexity.ai/chat/completions",
     MODEL: "llama-3.1-sonar-large-128k-online",
-  }
+  };
 
   async function getExistingData() {
-    const records = arrayOf(new Record())
-    await $app.dao().recordQuery("prompt_techniques").all(records)
+    const records = arrayOf(new Record());
+    await $app.dao().recordQuery("prompt_techniques").all(records);
     return {
       titles: records.map((record) => record.get("title")).join(", "),
       sources: records.map((record) => record.get("source_url")).join(", "),
-    }
+    };
   }
 
   async function sendPerplexityRequest(existingData) {
-    const currentDate = new Date().toISOString().split("T")[0]
+    const currentDate = new Date().toISOString().split("T")[0];
 
     const response = $http.send({
       method: "POST",
@@ -37,43 +37,43 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
           },
         ],
       }),
-    })
+    });
 
-    return response.json.choices[0].message.content
+    return response.json.choices?.[0]?.message?.content;
   }
 
   function extractPromptTechnique(content) {
     const extractData = (key) => {
-      const match = content.match(new RegExp(`"${key}":\\s*"([^"]*)"`))
-      return match ? match[1] : null
-    }
+      const match = content.match(new RegExp(`"${key}":\\s*"([^"]*)"`));
+      return match ? match[1] : null;
+    };
 
     return {
       title: extractData("title"),
       summary: extractData("summary"),
       example: extractData("example"),
       source_url: extractData("source_url"),
-    }
+    };
   }
 
   async function savePromptTechnique(promptTechnique) {
-    const collection = $app.dao().findCollectionByNameOrId("prompt_techniques")
-    const record = new Record(collection, promptTechnique)
-    $app.dao().saveRecord(record)
-    return record
+    const collection = $app.dao().findCollectionByNameOrId("prompt_techniques");
+    const record = new Record(collection, promptTechnique);
+    $app.dao().saveRecord(record);
+    return record;
   }
 
   try {
-    const existingData = await getExistingData()
-    const perplexityResponse = await sendPerplexityRequest(existingData)
-    console.log("perplexityResponse", perplexityResponse)
-    const promptTechnique = extractPromptTechnique(perplexityResponse)
+    const existingData = await getExistingData();
+    const perplexityResponse = await sendPerplexityRequest(existingData);
+    console.log("perplexityResponse", perplexityResponse);
+    const promptTechnique = extractPromptTechnique(perplexityResponse);
     if (promptTechnique) {
-      const record = await savePromptTechnique(promptTechnique)
-      return c.json(200, { record })
+      const record = await savePromptTechnique(promptTechnique);
+      return c.json(200, { record });
     }
-    return c.json(400, { error: "Invalid prompt technique data" })
+    return c.json(400, { error: "Invalid prompt technique data" });
   } catch (error) {
-    console.error("Error generating prompt technique:", error)
+    console.error("Error generating prompt technique:", error);
   }
-})
+});
