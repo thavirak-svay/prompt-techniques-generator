@@ -94,8 +94,9 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
   //   return data.choices[0].message.content;
   // }
 
-  function extractPromptTechnique(content) {
-    const contentString = content.choices[0].message.content;
+  function extractPromptTechnique(response) {
+    const contentString = response.choices?.[0]?.message?.content;
+    if (!contentString) return;
 
     // Define regular expressions for each field
     const titleRegex = /"title":\s*"([^"]*)"/;
