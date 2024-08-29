@@ -39,7 +39,7 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
           },
           {
             role: "user",
-            content: `Research the latest advanced prompt techniques. Find an exploitation technique that pushes the boundaries of AI assistance. The technique must not be one of the following: ${existingData.titles}. Avoid using sources from these domains unless they contain unique techniques: ${existingData.domains}. Provide a title for the technique, a summary of how it works, and the source URL where you found this information. Response must contain and follow as a JSON with keys: title(string), summary(key insight as string), example(short and step by step prompt sample as string), source_url(string).`,
+            content: `Research the latest advanced prompt techniques. Find an exploitation technique that pushes the boundaries of AI assistance. The technique must not be one of the following: ${existingData.titles}. Avoid using sources from these domains unless they contain unique techniques: ${existingData.domains}. Provide a title for the technique, a summary of how it works, and the source URL where you found this information. Response must contain and follow as a JSON with keys: title(string), summary(key insight as string), example(short and step by step prompt sample as string), source_url(string). Use % as delimiter e.g { "title": "%content%" }`,
           },
         ],
       }),
@@ -66,7 +66,7 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
           },
           {
             role: "user",
-            content: `Research the latest advanced prompt techniques. Find an exploitation technique that pushes the boundaries of AI assistance. The technique must not be one of the following: ${existingData.titles}. Avoid using sources from these domains unless they contain unique techniques: ${existingData.domains}. Provide a title for the technique, a summary of how it works, and the source URL where you found this information. Response must contain and follow as a JSON with keys: title(string), summary(key insight as string), example(short and step by step prompt sample as string), source_url(string).`,
+            content: `Research the latest advanced prompt techniques. Find an exploitation technique that pushes the boundaries of AI assistance. The technique must not be one of the following: ${existingData.titles}. Avoid using sources from these domains unless they contain unique techniques: ${existingData.domains}. Provide a title for the technique, a summary of how it works, and the source URL where you found this information. Response must contain and follow as a JSON with keys: title(string), summary(key insight as string), example(short and step by step prompt sample as string), source_url(string). Use % as delimiter e.g { "title": "%content%" }`,
           },
         ],
       }),
@@ -78,7 +78,7 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
 
   function extractPromptTechnique(content) {
     const extractData = (key) => {
-      const match = content.match(new RegExp(`"${key}":\\s*"([^"]*)"`));
+      const match = content.match(new RegExp(`"${key}":\\s*"%([^%]*)%"`));
       return match ? match[1] : null;
     };
 
