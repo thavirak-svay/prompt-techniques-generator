@@ -82,15 +82,10 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
       return match ? match[1] : null;
     };
 
-    const extractExample = () => {
-      const match = content.match(/"example":\s*([\s\S]*?)(?=\s*"\w+":|$)/);
-      return match ? match[1].trim() : null;
-    };
-
     return {
       title: extractData("title"),
       summary: extractData("summary"),
-      example: extractExample(),
+      example: extractData("example"),
       source_url: extractData("source_url"),
     };
   }
