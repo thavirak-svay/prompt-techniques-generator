@@ -63,53 +63,56 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
       }),
     });
 
-    return response.json.choices?.[0]?.message?.content;
+    return response;
   }
 
-  async function sendChatGPTRequest(existingData) {
-    const currentDate = new Date().toISOString().split("T")[0];
+  // async function sendChatGPTRequest(existingData) {
+  //   const currentDate = new Date().toISOString().split("T")[0];
 
-    const response = await fetch(OPEN_AI.API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${OPEN_AI.API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: OPEN_AI.LLM_MODEL,
-        messages: [
-          {
-            role: "system",
-            content: `You are an AI assistant focused on discovering and summarizing ChatGPT prompt exploitation techniques. I already acknowledged the following titles: ${existingData.titles}. Your goal is to find a unique and effective method that has not been covered by these existing topics. Avoid using sources from these domains unless they contain unique techniques: ${existingData.sources}. Focus on techniques published after ${currentDate}.`,
-          },
-          {
-            role: "user",
-            content: `Research the latest advanced prompt techniques. Find an exploitation technique that pushes the boundaries of AI assistance. The technique must not be one of the following: ${existingData.titles}. Avoid using sources from these domains unless they contain unique techniques: ${existingData.domains}. Provide a title for the technique, a summary of how it works, and the source URL where you found this information. "%" Symbol mark the start and end of the content of each key, do not skip it, Response must contain and follow as a JSON with keys: title(%string%), summary(%key insight as string%), example(%short and step by step prompt sample as string%), source_url(%string%).`,
-          },
-        ],
-      }),
-    });
+  //   const response = await fetch(OPEN_AI.API_URL, {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       Authorization: `Bearer ${OPEN_AI.API_KEY}`,
+  //     },
+  //     body: JSON.stringify({
+  //       model: OPEN_AI.LLM_MODEL,
+  //       messages: [
+  //         {
+  //           role: "system",
+  //           content: `You are an AI assistant focused on discovering and summarizing ChatGPT prompt exploitation techniques. I already acknowledged the following titles: ${existingData.titles}. Your goal is to find a unique and effective method that has not been covered by these existing topics. Avoid using sources from these domains unless they contain unique techniques: ${existingData.sources}. Focus on techniques published after ${currentDate}.`,
+  //         },
+  //         {
+  //           role: "user",
+  //           content: `Research the latest advanced prompt techniques. Find an exploitation technique that pushes the boundaries of AI assistance. The technique must not be one of the following: ${existingData.titles}. Avoid using sources from these domains unless they contain unique techniques: ${existingData.domains}. Provide a title for the technique, a summary of how it works, and the source URL where you found this information. "%" Symbol mark the start and end of the content of each key, do not skip it, Response must contain and follow as a JSON with keys: title(%string%), summary(%key insight as string%), example(%short and step by step prompt sample as string%), source_url(%string%).`,
+  //         },
+  //       ],
+  //     }),
+  //   });
 
-    const data = await response.json();
-    return data.choices[0].message.content;
-  }
+  //   const data = await response.json();
+  //   return data.choices[0].message.content;
+  // }
 
   function extractPromptTechnique(content) {
-    // Remove any surrounding ```json and ``` from the content
-    const cleanedContent = content.replace(/```json|```/g, "").trim();
+    const contentString = content.choices?.[0].message.content;
 
-    // Helper function to extract value for a given key
-    const extractData = (key) => {
-      const regex = new RegExp(`"${key}":\\s*"([^"]*)"`, "i");
-      const match = cleanedContent.match(regex);
-      return match ? match[1] : null;
-    };
+    // Extract the JSON part from the content string
+    const jsonStart = contentString.indexOf("{");
+    const jsonEnd = contentString.lastIndexOf("}") + 1;
+    let jsonString = contentString.substring(jsonStart, jsonEnd);
+
+    // Replace problematic control characters (e.g., newlines, tabs)
+    jsonString = jsonString.replace(/\\n/g, "\\n").replace(/\\t/g, "\\t").replace(/\n/g, "").replace(/\t/g, "");
+
+    // Parse the JSON string
+    const extractedObject = JSON.parse(jsonString);
 
     return {
-      title: extractData("title"),
-      summary: extractData("summary"),
-      example: extractData("example"),
-      source_url: extractData("source_url"),
+      title: extractedObject.title,
+      summary: extractedObject.summary,
+      example: extractedObject.example,
+      source_url: extractedObject.source_url,
     };
   }
 
