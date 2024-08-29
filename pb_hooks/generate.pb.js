@@ -96,9 +96,24 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
 
   function extractPromptTechnique(response) {
     const content = response.json.choices?.[0]?.message?.content;
+
+    // Function to extract JSON object from the content
+    const extractJsonObject = (content) => {
+      const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
+      if (jsonMatch) {
+        try {
+          return JSON.parse(jsonMatch[1]);
+        } catch (e) {
+          console.error("Error parsing JSON:", e);
+        }
+      }
+      return null;
+    };
+
+    const jsonData = extractJsonObject(content);
+
     const extractData = (key) => {
-      const match = content.match(new RegExp(`"${key}":\\s*"([^"]*)"`));
-      return match ? match[1] : null;
+      return jsonData ? jsonData[key] : null;
     };
 
     return {
