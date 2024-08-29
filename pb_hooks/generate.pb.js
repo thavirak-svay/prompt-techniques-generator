@@ -1,8 +1,8 @@
 routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
   const PERPLEXITY = {
-    API_KEY: "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",
-    URL: "https://api.perplexity.ai/chat/completions",
-    MODEL: "llama-3.1-sonar-large-128k-online",
+    API_KEY: $os.getenv("PERPLEXITY_API_KEY"),
+    API_URL: $os.getenv("PERPLEXITY_API_URL"),
+    LLM_MODEL: $os.getenv("PERPLEXITY_LLM_MODEL"),
   };
 
   async function getExistingData() {
@@ -19,13 +19,13 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
 
     const response = $http.send({
       method: "POST",
-      url: PERPLEXITY.URL,
+      url: PERPLEXITY.API_URL,
       headers: {
         Authorization: `Bearer ${PERPLEXITY.API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: PERPLEXITY.MODEL,
+        model: PERPLEXITY.LLM_MODEL,
         messages: [
           {
             role: "system",
