@@ -95,18 +95,17 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
   // }
 
   function extractPromptTechnique(response) {
-    function extractValueByKey(key, text) {
-      const regex = new RegExp(`"${key}"\\s*:\\s*"([^"]*)"`, "i");
-      const match = text.match(regex);
-      return match ? match[1] : `${key} not found`;
-    }
+    const extractData = (key) => {
+      const match = response.match(new RegExp(`"${key}":\\s*"([^"]*)"`));
+      return match ? match[1] : null;
+    };
 
-    const title = extractValueByKey("title", response);
-    const summary = extractValueByKey("summary", response);
-    const example = extractValueByKey("example", response);
-    const sourceUrl = extractValueByKey("source_url", response);
-
-    return { title, summary, example, source_url: sourceUrl };
+    return {
+      title: extractData("title"),
+      summary: extractData("summary"),
+      example: extractData("example"),
+      source_url: extractData("source_url"),
+    };
   }
 
   async function savePromptTechnique(promptTechnique) {
