@@ -95,18 +95,27 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
   // }
 
   function extractPromptTechnique(content) {
-    const contentString = content.choices?.[0].message.content;
+    const contentString = content.choices[0].message.content;
 
-    // Extract the JSON part from the content string
-    const jsonStart = contentString.indexOf("{");
-    const jsonEnd = contentString.lastIndexOf("}") + 1;
-    let jsonString = contentString.substring(jsonStart, jsonEnd);
+    // Define regular expressions for each field
+    const titleRegex = /"title":\s*"([^"]*)"/;
+    const summaryRegex = /"summary":\s*"([^"]*)"/;
+    const exampleRegex = /"example":\s*"([^"]*)"/;
+    const sourceUrlRegex = /"source_url":\s*"([^"]*)"/;
 
-    // Replace problematic control characters (e.g., newlines, tabs)
-    jsonString = jsonString.replace(/\\n/g, "\\n").replace(/\\t/g, "\\t").replace(/\n/g, "").replace(/\t/g, "");
+    // Extract values using Regex
+    const titleMatch = contentString.match(titleRegex);
+    const summaryMatch = contentString.match(summaryRegex);
+    const exampleMatch = contentString.match(exampleRegex);
+    const sourceUrlMatch = contentString.match(sourceUrlRegex);
 
-    // Parse the JSON string
-    const extractedObject = JSON.parse(jsonString);
+    // Create an object with the extracted values
+    const extractedObject = {
+      title: titleMatch ? titleMatch[1] : null,
+      summary: summaryMatch ? summaryMatch[1] : null,
+      example: exampleMatch ? exampleMatch[1] : null,
+      source_url: sourceUrlMatch ? sourceUrlMatch[1] : null,
+    };
 
     return {
       title: extractedObject.title,
