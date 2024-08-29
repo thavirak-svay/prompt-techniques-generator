@@ -13,5 +13,5 @@ COPY ./pb_migrations /pb_migrations
 # Expose the port PocketBase will run on
 EXPOSE 8090
 
-# Start the PocketBase server
-CMD ["serve", "--http=0.0.0.0:8090"]
+# # Start the PocketBase server
+# CMD ["serve", "--http=0.0.0.0:8090"]
