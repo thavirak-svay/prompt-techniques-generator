@@ -32,7 +32,7 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
       USER: `
         """
         Task:
-        Research the latest advanced prompt techniques that push the boundaries of AI assistance. Avoid using any techniques listed in: ${existingData.titles}, and sources from these domains unless they contain unique techniques: ${existingData.domains}. Identify and describe an exploitation technique. Provide a detailed summary of how it works, a sample prompt using the technique, and the source URL where this information was found.
+        Research the latest advanced prompt techniques that push the boundaries of AI assistance. Avoid using any techniques listed in: ${existingData.titles}, and sources from these domains unless they contain unique techniques: ${existingData.sources}. Identify and describe an exploitation technique. Provide a detailed summary of how it works, a sample prompt using the technique, and the source URL where this information was found.
 
         Formatting Instructions:
         The final output must be structured in JSON format, with specific keys and values. The '%' symbol must mark the start and end of each value. Structure the response as follows:
