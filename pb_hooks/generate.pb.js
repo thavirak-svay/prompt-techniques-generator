@@ -45,34 +45,19 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
   }
 
   function extractPromptTechnique(response) {
-    // Step 1: Parse the main response JSON
-    const data = JSON.parse(response);
+    const content = _.get(response, "json.choices[0].message.content", "");
 
-    // Step 2: Extract the content string from the nested structure
-    const content = data.choices?.[0]?.message?.content?.trim() || "";
+    // Extract the JSON string from the content
+    const jsonString = _.chain(content).split("```json").last().split("```").first().trim().value();
 
-    // Step 3: Use a regex to find the JSON block within the content
-    const jsonMatch = content.match(/```json\s*({[\s\S]*})\s*```/);
+    const jsonData = JSON.parse(jsonString);
 
-    // Step 4: Parse the extracted JSON if the regex finds a match
-    if (jsonMatch) {
-      try {
-        const contentJson = JSON.parse(jsonMatch[1]);
-
-        // Step 5: Return the required fields from the parsed JSON
-        return {
-          title: contentJson.title?.trim() || "",
-          summary: contentJson.summary?.trim() || "",
-          example: contentJson.example?.trim() || "",
-          source_url: contentJson.source_url?.trim() || "",
-        };
-      } catch (error) {
-        console.error("Error parsing the extracted JSON:", error);
-        return null;
-      }
-    }
-
-    return null; // Return null if the JSON block was not found
+    return {
+      title: _.get(jsonData, "title", null),
+      summary: _.get(jsonData, "summary", null),
+      example: _.get(jsonData, "example", null),
+      source_url: _.get(jsonData, "source_url", null),
+    };
   }
 
   async function savePromptTechnique(promptTechnique) {
