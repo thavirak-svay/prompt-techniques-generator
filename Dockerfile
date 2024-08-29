@@ -14,4 +14,4 @@ COPY ./pb_migrations /pb_migrations
 EXPOSE 8090
 
 # Start the PocketBase server
-CMD ["serve", "--dir", "/app", "--data", "/pb_data", "--hooks", "/pb_hooks", "--public", "/pb_public", "--migrations", "/pb_migrations"]
+CMD ["serve", "--http=0.0.0.0:8090"]
