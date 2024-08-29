@@ -43,16 +43,17 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
   }
 
   function extractPromptTechnique(content) {
-    const extractData = (key) => {
-      const match = content.match(new RegExp(`"${key}":\\s*"([^"]*)"`));
-      return match ? match[1] : null;
+    const extractData = (startKey, endKey) => {
+      const regex = new RegExp(`"${startKey}":\\s*"([^]*)"\\s*,?\\s*"${endKey}"`, "s");
+      const match = content.match(regex);
+      return match ? match[1].trim() : null;
     };
 
     return {
-      title: extractData("title"),
-      summary: extractData("summary"),
-      example: extractData("example"),
-      source_url: extractData("source_url"),
+      title: extractData("title", "summary"),
+      summary: extractData("summary", "example"),
+      example: extractData("example", "source_url"),
+      source_url: extractData("source_url", "}"), // this assumes source_url is the last key
     };
   }
 
