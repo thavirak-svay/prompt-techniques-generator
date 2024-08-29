@@ -24,28 +24,20 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
     const currentDate = new Date().toISOString().split("T")[0];
 
     const PROMPT = {
-      SYSTEM: `
-        """
-        You are an AI assistant focused on discovering and summarizing AGI prompt exploitation techniques. I already acknowledged the following titles: ${existingData.titles}. Your goal is to find a unique and effective method that has not been covered by these existing topics. Avoid using sources from these domains unless they contain unique techniques: ${existingData.sources}. Focus on techniques published after ${currentDate}.
-        """
-      `,
+      SYSTEM: `You are an AI assistant focused on discovering and summarizing AGI prompt exploitation techniques. I already acknowledged the following titles: ${existingData.titles}. Your goal is to find a unique and effective method that has not been covered by these existing topics. Avoid using sources from these domains unless they contain unique techniques: ${existingData.sources}. Focus on techniques published after ${currentDate}.`,
       USER: `
-        """
-        Task:
         Research the latest advanced prompt techniques that push the boundaries of AI assistance. Avoid using any techniques listed in: ${existingData.titles}, and sources from these domains unless they contain unique techniques: ${existingData.sources}. Identify and describe an exploitation technique. Provide a detailed summary of how it works, a sample prompt using the technique, and the source URL where this information was found.
 
         Formatting Instructions:
-        The final output must be structured in JSON format, with specific keys and values. The '%' symbol must mark the start and end of each value. Structure the response as follows:
+        The final output must be structured in JSON format, with specific keys and values.
 
         {
-          "title": "%string%",
-          "summary": "%key insight as string%",
-          "example": "%short and step-by-step prompt sample as string%",
-          "source_url": "%string%"
+          "title": "as string",
+          "summary": "key insight as string",
+          "example": "short and step-by-step prompt sample as string",
+          "source_url": "as string"
         }
 
-        Do not skip or alter the '%' symbols or the JSON structure.
-        """
       `,
     };
 
@@ -103,8 +95,13 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
   }
 
   function extractPromptTechnique(content) {
+    // Remove any surrounding ```json and ``` from the content
+    const cleanedContent = content.replace(/```json|```/g, "").trim();
+
+    // Helper function to extract value for a given key
     const extractData = (key) => {
-      const match = content.match(new RegExp(`"${key}":\\s*"%([^%]*)%"`));
+      const regex = new RegExp(`"${key}":\\s*"([^"]*)"`, "i");
+      const match = cleanedContent.match(regex);
       return match ? match[1] : null;
     };
 
