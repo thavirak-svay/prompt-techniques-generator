@@ -95,48 +95,18 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
   // }
 
   function extractPromptTechnique(response) {
-    const jsonRegex = /```json\\n({[\s\S]*?})\\n```/;
-    const jsonMatch = response.match(jsonRegex);
-
-    if (jsonMatch && jsonMatch[1]) {
-      const jsonString = jsonMatch[1];
-
-      try {
-        // Replace escaped quotes with normal quotes to ensure valid JSON
-        const cleanedJsonString = jsonString.replace(/\\"/g, '"');
-
-        // Additional safety check before parsing
-        if (cleanedJsonString.trim().startsWith("{") && cleanedJsonString.trim().endsWith("}")) {
-          const extractedObject = JSON.parse(cleanedJsonString);
-
-          // Ensure all desired fields are extracted and validate them
-          const title = extractedObject.title ? extractedObject.title : "Title not found";
-          const summary = extractedObject.summary ? extractedObject.summary : "Summary not found";
-          const example = extractedObject.example ? extractedObject.example : "Example not found";
-          const sourceUrl = extractedObject.source_url ? extractedObject.source_url : "Source URL not found";
-
-          // Log the extracted fields
-          console.log({
-            title: title,
-            summary: summary,
-            example: example,
-            source_url: sourceUrl,
-          });
-          return {
-            title,
-            summary,
-            example,
-            source_url: sourceUrl,
-          };
-        } else {
-          console.error("Extracted string does not seem to be valid JSON format.");
-        }
-      } catch (e) {
-        console.error("Error parsing JSON:", e);
-      }
-    } else {
-      console.error("No valid JSON block found in the response.");
+    function extractValueByKey(key, text) {
+      const regex = new RegExp(`"${key}"\\s*:\\s*"([^"]*)"`, "i");
+      const match = text.match(regex);
+      return match ? match[1] : `${key} not found`;
     }
+
+    const title = extractValueByKey("title", response);
+    const summary = extractValueByKey("summary", response);
+    const example = extractValueByKey("example", response);
+    const sourceUrl = extractValueByKey("source_url", response);
+
+    return { title, summary, example, source_url: sourceUrl };
   }
 
   async function savePromptTechnique(promptTechnique) {
