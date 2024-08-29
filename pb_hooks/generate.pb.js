@@ -11,6 +11,15 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
     LLM_MODEL: $os.getenv("OPEN_AI_LLM_MODEL"),
   };
 
+  async function getExistingData() {
+    const records = arrayOf(new Record());
+    await $app.dao().recordQuery("prompt_techniques").all(records);
+    return {
+      titles: records.map((record) => record.get("title")).join(", "),
+      sources: records.map((record) => record.get("source_url")).join(", "),
+    };
+  }
+
   async function sendPerplexityRequest(existingData) {
     const currentDate = new Date().toISOString().split("T")[0];
 
