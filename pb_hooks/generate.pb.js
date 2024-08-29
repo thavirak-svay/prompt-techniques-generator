@@ -1,4 +1,6 @@
 routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
+  const _ = require("https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js");
+
   const PERPLEXITY = {
     API_KEY: $os.getenv("PERPLEXITY_API_KEY"),
     API_URL: $os.getenv("PERPLEXITY_API_URL"),
@@ -39,28 +41,26 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
       }),
     });
 
-    return response.json.choices?.[0]?.message?.content;
+    return response;
   }
 
-  function extractPromptTechnique(content) {
-    const extractDataByStartEnd = (startKey, endKey) => {
-      const regex = new RegExp(`"${startKey}":\\s*"([^]*)"\\s*,?\\s*"${endKey}"`, "s");
-      const match = content.match(regex);
-      return match ? match[1].trim() : null;
-    };
+  function extractPromptTechnique(response) {
+    const data = JSON.parse(response);
 
-    const extractDataByKey = (key) => {
-      const regex = new RegExp(`"${key}":\\s*"([^"]*)"`, "s");
-      const match = content.match(regex);
-      return match ? match[1].trim() : null;
-    };
+    // Extract the content from the nested structure
+    const content = _.get(data, "choices[0].message.content", "").trim();
 
-    return {
-      title: extractDataByStartEnd("title", "summary"),
-      summary: extractDataByStartEnd("summary", "example"),
-      example: extractDataByStartEnd("example", "source_url"),
-      source_url: extractDataByKey("source_url"),
-    };
+    // You can now use regex or JSON parsing to extract the data you need from `content`
+    const jsonMatch = content.match(/```json\s*({[\s\S]*})\s*```/);
+    if (jsonMatch) {
+      const contentJson = JSON.parse(jsonMatch[1]);
+      return {
+        title: _.get(contentJson, "title", "").trim(),
+        summary: _.get(contentJson, "summary", "").trim(),
+        example: _.get(contentJson, "example", "").trim(),
+        source_url: _.get(contentJson, "source_url", "").trim(),
+      };
+    }
   }
 
   async function savePromptTechnique(promptTechnique) {
