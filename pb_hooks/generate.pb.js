@@ -1,6 +1,4 @@
 routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
-  const _ = require("https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js");
-
   const PERPLEXITY = {
     API_KEY: $os.getenv("PERPLEXITY_API_KEY"),
     API_URL: $os.getenv("PERPLEXITY_API_URL"),
@@ -44,19 +42,24 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
     return response;
   }
 
-  function extractPromptTechnique(response) {
-    const content = _.get(response, "json.choices[0].message.content", "");
+  function extractPromptTechnique(content) {
+    const extractDataByStartEnd = (startKey, endKey) => {
+      const regex = new RegExp(`"${startKey}":\\s*"([^]*)"\\s*,?\\s*"${endKey}"`, "s");
+      const match = content.match(regex);
+      return match ? match[1].trim() : null;
+    };
 
-    // Extract the JSON string from the content
-    const jsonString = _.chain(content).split("```json").last().split("```").first().trim().value();
-
-    const jsonData = JSON.parse(jsonString);
+    const extractDataByKey = (key) => {
+      const regex = new RegExp(`"${key}":\\s*"([^"]*)"`, "s");
+      const match = content.match(regex);
+      return match ? match[1].trim() : null;
+    };
 
     return {
-      title: _.get(jsonData, "title", null),
-      summary: _.get(jsonData, "summary", null),
-      example: _.get(jsonData, "example", null),
-      source_url: _.get(jsonData, "source_url", null),
+      title: extractDataByStartEnd("title", "summary"),
+      summary: extractDataByStartEnd("summary", "example"),
+      example: extractDataByStartEnd("example", "source_url"),
+      source_url: extractDataByKey("source_url"),
     };
   }
 
