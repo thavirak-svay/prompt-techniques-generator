@@ -48,10 +48,15 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
       return match ? match[1] : null;
     };
 
+    const extractObjectData = (key) => {
+      const match = content.match(new RegExp(`"${key}":\\s*({[^}]*})`));
+      return match ? JSON.parse(match[1]) : null;
+    };
+
     return {
       title: extractData("title"),
       summary: extractData("summary"),
-      example: extractData("example"),
+      example: extractObjectData("example"),
       source_url: extractData("source_url"),
     };
   }
