@@ -42,7 +42,9 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
     return response;
   }
 
-  function extractPromptTechnique(content) {
+  function extractPromptTechnique(response) {
+    const content = response.json.choices?.[0]?.message?.content;
+
     const extractDataByStartEnd = (startKey, endKey) => {
       const regex = new RegExp(`"${startKey}":\\s*"([^]*)"\\s*,?\\s*"${endKey}"`, "s");
       const match = content.match(regex);
