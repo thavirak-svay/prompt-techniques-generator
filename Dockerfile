@@ -10,12 +10,11 @@ RUN apk add --no-cache \
 ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip /tmp/pb.zip
 RUN unzip /tmp/pb.zip -d /pb/
 
-# Copy necessary directories
 COPY ./pb_migrations /pb/pb_migrations
+COPY ./pb_data /pb/pb_data
 COPY ./pb_hooks /pb/pb_hooks
 COPY ./pb_public /pb/public
 
-# Create a volume for data persistence
 VOLUME /pb/pb_data
 
 EXPOSE 8080
