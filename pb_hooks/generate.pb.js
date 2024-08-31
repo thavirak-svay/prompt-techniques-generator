@@ -75,7 +75,7 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
   try {
     const existingData = await getExistingData();
     const perplexityResponse = await sendPerplexityRequest(existingData);
-    console.log("perplexityResponse", perplexityResponse);
+    console.log("perplexityResponse", JSON.stringify(perplexityResponse));
     const promptTechnique = extractPromptTechnique(perplexityResponse);
     if (promptTechnique) {
       const record = await savePromptTechnique(promptTechnique);
