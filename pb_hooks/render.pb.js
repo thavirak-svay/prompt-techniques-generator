@@ -1,17 +1,17 @@
 routerAdd("GET", "/api/prompt-techniques", async (c) => {
   async function getAllRecords(page = 1, limit = 10) {
-    const offset = (page - 1) * limit
-    const records = arrayOf(new Record())
+    const offset = (page - 1) * limit;
+    const records = arrayOf(new Record());
     $app
       .dao()
       .recordQuery("prompt_techniques")
       .orderBy("created DESC")
       .limit(limit + 1)
       .offset(offset)
-      .all(records)
+      .all(records);
 
-    const hasNextPage = records.length > limit
-    const paginatedRecords = records.slice(0, limit)
+    const hasNextPage = records.length > limit;
+    const paginatedRecords = records.slice(0, limit);
 
     return {
       records: paginatedRecords.map((record) => ({
@@ -23,7 +23,7 @@ routerAdd("GET", "/api/prompt-techniques", async (c) => {
         created: record.get("created"),
       })),
       hasNextPage,
-    }
+    };
   }
 
   function generateHtml(records, page, hasNextPage) {
@@ -62,7 +62,7 @@ routerAdd("GET", "/api/prompt-techniques", async (c) => {
                 font-family: 'Inter', 'system-ui', sans-serif;
             }
 
-            code {
+            * {
                 text-wrap: balance;
             }
 
@@ -164,16 +164,16 @@ routerAdd("GET", "/api/prompt-techniques", async (c) => {
         </script>
     </body>
     </html>
-  `
+  `;
   }
 
   try {
-    const page = parseInt(c.queryParam("page") || 1, 10)
-    const limit = 10
-    const { records, hasNextPage } = await getAllRecords(page, limit)
-    return c.html(200, generateHtml(records, page, hasNextPage))
+    const page = parseInt(c.queryParam("page") || 1, 10);
+    const limit = 10;
+    const { records, hasNextPage } = await getAllRecords(page, limit);
+    return c.html(200, generateHtml(records, page, hasNextPage));
   } catch (error) {
-    console.error("Error fetching prompt techniques:", error)
-    return c.text(500, "Internal Server Error")
+    console.error("Error fetching prompt techniques:", error);
+    return c.text(500, "Internal Server Error");
   }
-})
+});
