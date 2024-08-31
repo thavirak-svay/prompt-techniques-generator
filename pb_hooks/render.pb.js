@@ -60,7 +60,10 @@ routerAdd("GET", "/api/prompt-techniques", async (c) => {
 
             body {
                 font-family: 'Inter', 'system-ui', sans-serif;
-                overflow-wrap: break-word;
+            }
+
+            * {
+                text-wrap: balance;
             }
 
             .source-link {
@@ -100,7 +103,7 @@ routerAdd("GET", "/api/prompt-techniques", async (c) => {
             }
         </style>
     </head>
-    <body class="bg-[var(--background)] text-[var(--text)] transition-colors duration-300 max-w-[75rem] mx-auto p-[2.5rem]">
+    <body class="bg-[var(--background)] text-[var(--text)] transition-colors duration-300 max-w-[70rem] mx-auto p-[2.5rem]">
         <div class="fixed top-[1.25rem] right-[1.25rem] cursor-pointer" onclick="toggleDarkMode()">
             <span class="sun-icon mr-[0.75rem] text-[1.5rem]">☀️</span>
             <span class="moon-icon hidden mr-[0.75rem] text-[1.5rem]">🌙</span>
