@@ -60,10 +60,7 @@ routerAdd("GET", "/api/prompt-techniques", async (c) => {
 
             body {
                 font-family: 'Inter', 'system-ui', sans-serif;
-            }
-
-            * {
-                text-wrap: balance;
+                overflow-wrap: break-word;
             }
 
             .source-link {
