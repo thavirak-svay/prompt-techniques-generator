@@ -1,20 +1,22 @@
-version: "3"
+version: "3.8"
 
 services:
   pocketbase:
-    image: ghcr.io/muchobien/pocketbase:latest
-    container_name: pocketbase
-    restart: unless-stopped
+    build: .
     ports:
-      - "8090:8090"
+      - "8080:8080"
     volumes:
       - pb_data:/pb/pb_data
-      - pb_hooks:/pb/pb_hooks
-      - pb_public:/pb/public
-      - pb_migrations:/pb/pb_migrations
+      - ./pb_migrations:/pb/pb_migrations
+      - ./pb_hooks:/pb/pb_hooks
+      - ./pb_public:/pb/pb_public
+
+    environment:
+      PB_VERSION: "0.22.20"
+      API_BASE_URL: "http://localhost:8080"
+      GENERATE_CRON_SCHEDULE: "*/30 * * * *"
+      PERPLEXITY_API_KEY: "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"
+      PERPLEXITY_LLM_MODEL: "llama-3.1-sonar-large-128k-online"
 
 volumes:
   pb_data:
-  pb_hooks:
-  pb_public:
-  pb_migrations:

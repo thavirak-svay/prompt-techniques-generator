@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prompt Techniques</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.0.1/build/global/luxon.min.js"></script>
+    <style>
+      :root {
+        --background: #f1efe7;
+        --card-bg: #f8f7f3;
+        --text: #333333;
+        --text-light: #5a5a5a;
+        --accent: #ff6b35;
+        --link: #8b4513;
+        --example-bg: #f0f0f0;
+      }
+
+      * {
+        text-wrap: pretty;
+        overflow-wrap: break-word;
+      }
+
+      body.dark {
+        --background: #303446;
+        --card-bg: #292c3c;
+        --text: #c6d0f5;
+        --text-light: #a5adce;
+        --accent: #babbf1;
+        --link: #8bd5ca;
+        --example-bg: #414559;
+      }
+
+      body {
+        font-family: "Spectral", "system-ui", sans-serif;
+      }
+
+      .example {
+        font-family: "Inter", serif;
+      }
+
+      .source-link {
+        font-family: "Fira Mono", monospace;
+      }
+
+      .pagination {
+        position: fixed;
+        right: 1.25rem;
+        bottom: 1.25rem;
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+        font-family: "Inter";
+      }
+
+      .pagination button {
+        background-color: var(--card-bg);
+        border: none;
+        padding: 0.4rem 0.9rem;
+        border-radius: 0.5rem;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.2s;
+        color: var(--text-light);
+      }
+
+      .pagination button:hover {
+        background-color: var(--link);
+        color: var(--background);
+      }
+
+      .pagination button:disabled {
+        background-color: var(--example-bg);
+        cursor: not-allowed;
+        opacity: 0.6;
+        color: var(--text-light);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-[var(--background)] text-[var(--text)] transition-colors duration-300 max-w-[70rem] mx-auto lg:p-[2.5rem] p-[1rem]"
+  >
+    <div class="fixed top-[1.25rem] right-[1.25rem] cursor-pointer" onclick="toggleDarkMode()">
+      <span class="sun-icon mr-[0.75rem] text-[1.5rem]">☀️</span>
+      <span class="moon-icon hidden mr-[0.75rem] text-[1.5rem]">🌙</span>
+    </div>
+    <h1 class="flex items-center mb-[2rem] text-[2rem] font-semibold">Prompt Techniques</h1>
+    <div
+      id="records-container"
+      hx-trigger="load"
+      hx-get="/api/prompt-techniques?page=1"
+      hx-target="#records-container"
+      hx-swap="innerHTML"
+    >
+      <!-- Records will be loaded here -->
+    </div>
+    <script>
+      function toggleDarkMode() {
+        const body = document.body
+        body.classList.toggle("dark")
+        const isDarkMode = body.classList.contains("dark")
+        localStorage.setItem("theme", isDarkMode ? "dark" : "light")
+        document.querySelectorAll(".sun-icon, .moon-icon").forEach((el) => el.classList.toggle("hidden"))
+      }
+
+      document.addEventListener("htmx:afterSettle", function () {
+        document.querySelectorAll(".example").forEach((el) => {
+          const markdown = el.getAttribute("data-markdown") || ""
+          el.innerHTML = marked.parse(markdown)
+        })
+
+        document.querySelectorAll(".date").forEach((el) => {
+          const date = el.getAttribute("data-date")
+          if (date) {
+            const dt = luxon.DateTime.fromISO(date.replace(" ", "T"))
+            el.innerText = dt.toFormat("DD, hh:mm a")
+          }
+        })
+      })
+
+      window.onload = () => {
+        const savedTheme = localStorage.getItem("theme")
+        if (savedTheme && savedTheme === "dark") {
+          document.body.classList.add("dark")
+          document.querySelectorAll(".sun-icon, .moon-icon").forEach((el) => el.classList.toggle("hidden"))
+        }
+      }
+    </script>
+  </body>
+</html>

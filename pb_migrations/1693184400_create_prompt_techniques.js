@@ -17,8 +17,14 @@ migrate(
         },
         {
           name: "example",
-          type: "text",
+          type: "editor",
           required: true,
+          required: false,
+          presentable: false,
+          unique: false,
+          options: {
+            convertUrls: false,
+          },
         },
         {
           name: "source_url",
