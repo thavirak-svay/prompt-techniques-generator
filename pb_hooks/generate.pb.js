@@ -13,7 +13,8 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
     await $app.dao().recordQuery("prompt_techniques").all(records)
     return {
       titles: records.map((record) => record.get("title")).join(", "),
-      sources: records.map((record) => record.get("source_url")).join(", "),
+      sources: [],
+      // sources: records.map((record) => record.get("source_url")).join(", "),
     }
   }
 
