@@ -88,7 +88,7 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
   }
 
   async function sendToDiscord(promptTechnique) {
-    const embedColor = 3447003 // Discord Blue
+    const embedColor = 3447003
 
     const discordEmbed = {
       embeds: [
@@ -124,7 +124,7 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
     try {
       await $http.send({
         method: "POST",
-        url: DISCORD.WEBHOOK_URL,
+        url: $os.getenv("DISCORD_WEBHOOK_URL"),
         headers: {
           "Content-Type": "application/json",
         },
@@ -144,8 +144,8 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
     const promptTechnique = extractPromptTechnique(perplexityResponse)
     if (promptTechnique?.example) {
       const record = await savePromptTechnique(promptTechnique)
-      await sendToDiscord(promptTechnique)
-      return c.json(200, { record })
+      const discordSent = await sendToDiscord(promptTechnique)
+      return c.json(200, { record, discordSent })
     }
     return c.json(400, { error: "Invalid prompt technique data" })
   } catch (error) {
