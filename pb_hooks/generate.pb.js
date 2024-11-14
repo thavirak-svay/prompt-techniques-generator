@@ -108,7 +108,7 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
             },
             {
               name: "Source",
-              value: promptTechnique.source_url || "N/A",
+              value: stripHtmlTags(promptTechnique.source_url) || "N/A",
             },
           ],
         },
