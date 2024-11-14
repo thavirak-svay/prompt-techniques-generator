@@ -13,8 +13,7 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
     await $app.dao().recordQuery("prompt_techniques").all(records)
     return {
       titles: records.map((record) => record.get("title")).join(", "),
-      sources: [],
-      // sources: records.map((record) => record.get("source_url")).join(", "),
+      sources: records.map((record) => record.get("source_url")).join(", "),
     }
   }
 
@@ -87,36 +86,31 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
     return record
   }
 
-  async function sendToDiscord(promptTechnique) {
-    const embedColor = 3447003
+  function stripHtmlTags(str) {
+    if (str === null || str === "") return false
+    else str = str.toString()
+    return str.replace(/<[^>]*>/g, "")
+  }
 
+  async function sendToDiscord(promptTechnique) {
     const discordEmbed = {
       embeds: [
         {
-          title: "New Prompt Technique Generated",
-          color: embedColor,
+          title: promptTechnique.title,
           fields: [
-            {
-              name: "Title",
-              value: promptTechnique.title || "N/A",
-            },
             {
               name: "Summary",
               value: promptTechnique.summary || "N/A",
             },
             {
               name: "Example",
-              value: promptTechnique.example || "N/A",
+              value: stripHtmlTags(promptTechnique.example) || "N/A",
             },
             {
               name: "Source",
               value: promptTechnique.source_url || "N/A",
             },
           ],
-          timestamp: new Date().toISOString(),
-          footer: {
-            text: keyword ? `Keyword: ${keyword}` : "Generated Prompt Technique",
-          },
         },
       ],
     }
