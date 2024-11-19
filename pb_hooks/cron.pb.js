@@ -12,7 +12,7 @@ cronAdd("Generate Prompt Technique", $os.getenv("GENERATE_CRON_SCHEDULE"), async
   })
 })
 
-cronAdd("Warm instance every 10 minutes", "*/10 * * * *", async () => {
+cronAdd("Warm instance every 1 minute", "*/1 * * * *", async () => {
   const API_BASE_URL = $os.getenv("API_BASE_URL")
   const apiUrl = `${API_BASE_URL}/api/prompt-techniques`
 
