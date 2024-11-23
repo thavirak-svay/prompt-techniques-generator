@@ -13,7 +13,8 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
     await $app.dao().recordQuery("prompt_techniques").all(records)
     return {
       titles: records.map((record) => record.get("title")).join(", "),
-      sources: records.map((record) => record.get("source_url")).join(", "),
+      sources: [],
+      // sources: records.map((record) => record.get("source_url")).join(", "),
     }
   }
 
@@ -30,24 +31,24 @@ routerAdd("POST", "/api/prompt-techniques/generate", async (c) => {
         messages: [
           {
             role: "system",
-            content: `You are an AI assistant specialized in identifying and summarizing recent techniques for exploiting ChatGPT and Claude AI prompts${
+            content: `You are an AI assistant specialized in identifying and summarizing recent techniques for exploiting prompts${
               keyword ? ' related to "' + keyword + '"' : ""
             }. I have already reviewed the following titles: ${
               existingData.titles
             }. Your objective is to discover a method that is both unique and not addressed by any of these titles. Ensure that your approach does not rely on sources from the following domains unless they provide entirely new insights not present in the existing titles: ${
               existingData.sources
-            }. Prioritize recent techniques (from this week, month, year and so no, from newest to oldest) and prioritize originality and specificity in your findings.
+            }. Prioritize recent techniques and originality and specificity in your findings.
 `,
           },
           {
             role: "user",
             content: `Research the latest advanced prompt techniques${
               keyword ? ' related to "' + keyword + '"' : ""
-            }. Prioritize recent techniques (from this week, month, year and so no, from newest to oldest). Find an exploitation technique that pushes the boundaries of AI assistance. The technique must not be one of the following: ${
+            }. Prioritize recent techniques, find an exploitation technique that pushes the boundaries of AI assistance. The technique must not be one of the following: ${
               existingData.titles
             }. Avoid using sources from these domains unless they contain unique techniques: ${
               existingData.sources
-            }. Try to be diverse in finding new techniques. Provide a title for the technique, a summary of how it works, a short but meaningful example and the source URL where you found this information. Response must contain and follow as a JSON with keys: title as string, summary(key insight) as string, example(short and step by step prompt sample) as rich text format, source_url as string.`,
+            }. Try to be diverse in finding new techniques. Provide a title for the technique, a summary of how it works, a short but meaningful example and the source URL where you found this information. No matter what happen the response must only contain and follow as a JSON with keys: title as string, summary(key insight) as string, example(short and step by step prompt sample) as rich text format, source_url as string.`,
           },
         ],
       }),
